@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://wanyanshanmei-dotcom.github.io/sitemap.xml
