@@ -1,23 +1,70 @@
-# AdScope · Advertising growth & experiment decisions
+# AdScope · Advertising dashboard & A/B experiment planning
 
-Independent bilingual portfolio prototype. All account and experiment data is synthetic. Built with coding assistance; no production impact is claimed.
+[Open demo](https://wanyanshanmei-dotcom.github.io/projects/adscope.html) · [中文版](https://wanyanshanmei-dotcom.github.io/zh/projects/adscope.html)
 
-- [Open live demo](https://wanyanshanmei-dotcom.github.io/projects/adscope.html)
-- [中文版](https://wanyanshanmei-dotcom.github.io/zh/projects/adscope.html)
-- [Download complete runnable source and methods](https://wanyanshanmei-dotcom.github.io/assets/adscope-source.zip)
+This folder provides browsable core modules. [Download the complete runnable source ZIP](https://wanyanshanmei-dotcom.github.io/assets/adscope-source.zip) for standalone bilingual HTML, data, styles and verification.
 
-This folder makes the core source modules browsable on GitHub. **To run the demo, download and extract the full ZIP**, then run `python3 -m http.server 4173`. Its README documents the complete layout and statistical assumptions; it includes English/Chinese HTML, synthetic data, a standalone verifier and all styles.
+Independent bilingual portfolio prototype, built with coding assistance.
+All 24 accounts and 56 days of records are fictional. No experiment has run.
 
-## What to inspect
+1. Select a market, industry and account. Compare weekly advertising spend,
+   click-through rate and click-to-purchase rate.
+2. Plan an experiment for that selected account: product-description ad A vs
+   user-experience ad B. Assume user-level 50/50 random assignment, fixed group
+   membership and one purchased-within-7-days outcome per assigned user.
+3. Generate and download an English/Chinese plan containing the selected
+   account's observations and the current sample-size assumptions.
 
-- `adscope-stats.mjs`: independent-proportions z-test, absolute-difference confidence interval, power planning, SRM and decision gates.
-- `adscope.mjs`: data aggregation, filtering, account diagnosis, planning UI, four completed scenarios and bilingual template brief.
-- `adscope_data.py`: fixed-seed generator for 24 fictional accounts × 56 days.
-- `adscope_case.py`: bilingual template in the portfolio build.
-- `verify_adscope.mjs`: verification used by the portfolio checkout; the ZIP includes the runnable standalone version.
+The selected account, planning heading and generated document stay linked.
+Changing account or inputs clears the old document and disables its download.
 
-## Statistical design
+## Run
 
-Sticky user-level 50/50 allocation, intention-to-treat denominator, binary 7-day purchase outcome. Primary alpha .05; two-sided pooled z-test and unpooled Wald 95% CI. Predeclared business threshold +0.40 percentage points. Complaint-user-rate non-inferiority gate: one-sided 95% upper bound <+0.20 pp. Sparse counts are insufficient. SRM chi-square flag at p<.001.
+Download the complete source ZIP from the project page, extract it, then run
+`python3 -m http.server 4173` in that folder. Open http://localhost:4173/ or /zh/.
+No API key, build or external JavaScript dependency is needed.
+Run numerical verification with `node verify.mjs` in the extracted ZIP.
+In the portfolio checkout, use `node scripts/verify_adscope.mjs`.
 
-Four independent completed teaching cases distinguish insufficient evidence, significance without sufficient business value, safety-gate failure and staged rollout. No repeated peeking or claim that nonsignificance proves equivalence. Planner powers the primary metric only. Dashboard patterns do not establish causal attribution. Brief generation is local template automation; no LLM or TikTok API is connected.
+## Data and definitions
+
+Python generator: seed 20261102; 24 accounts × 56 days, Aug 31–Oct 25, 2026.
+Weekly comparison: Oct 19–25 vs Oct 12–18; UTC, USD.
+CTR = sum(clicks) / sum(impressions).
+Click-to-purchase rate = sum(purchases) / sum(clicks).
+Do not average daily rates. Daily observations are not causal evidence.
+
+The planned experiment's purchase rate is buyers / ALL assigned users,
+including non-clickers, with each buyer counted once within 7 days.
+This is NOT the dashboard click-to-purchase rate. The daily account data does
+not contain user-level assignment history, so the planner uses manually entered
+baseline and target-difference assumptions, not inferred account estimates.
+An account change does not invent new baseline estimates; the inputs stay
+editable and explicitly hypothetical.
+
+## Sample-size method
+
+Equal independent groups, two-sided alpha .05, power .80 (fixed).
+User inputs: baseline pA and positive absolute difference d (percentage points
+in the UI, probability units internally). Set pB = pA + d and pbar=(pA+pB)/2.
+
+n ≈ [z(.975) sqrt(2 pbar (1-pbar))
+      + z(.80) sqrt(pA(1-pA) + pB(1-pB))]^2 / d^2
+
+Round up per group. Baseline .04 and difference .004 give 39,475 per group.
+This is a normal-approximation planning estimate; it is not an experiment result,
+a guaranteed effect or a claim that smaller differences can never be detected.
+Specify sample size before execution; do not stop at the first significant p-value.
+A real experiment also requires allocation/tracking validation and an appropriate
+full protocol. No complaints, safety gates, completed scenarios or effect
+estimates are generated by this simplified demo.
+
+## Source
+
+- adscope.mjs: dashboard, selected-account linkage, planner and template document.
+- adscope-stats.mjs: normal CDF, quantile and independent-proportions planning.
+- scripts/adscope_data.py: reproducible fictional data generator.
+- adscope_case.py: portfolio bilingual renderer; ZIP includes standalone HTML.
+- assets/adscope-data.json: synthetic daily records.
+
+Brief generation is deterministic local template automation, not an LLM.

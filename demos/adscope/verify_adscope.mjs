@@ -1,24 +1,12 @@
 import assert from 'node:assert/strict';
 import {existsSync} from 'node:fs';
 const bundled=existsSync(new URL('../dist/adscope-stats.mjs',import.meta.url));
-const {normalCDF,quantile,compare,plan,srm,assess,scenarios}=await import(bundled?'../dist/adscope-stats.mjs':'./adscope-stats.mjs');
-const close=(a,b,tolerance=1e-6)=>assert.ok(Math.abs(a-b)<tolerance,`${a} != ${b}`);
-close(normalCDF(1.959963984540054),.975);
-close(quantile(.975),1.959963984540054,3e-6);
-// Reference computed independently with Python statistics.NormalDist.
-assert.equal(plan(.04,.004,.05,.8),39475);
-assert.ok(plan(.04,.002)>plan(.04,.004));
-assert.ok(plan(.04,.004,.01)>plan(.04,.004,.05));
-assert.ok(plan(.04,.004,.05,.9)>plan(.04,.004,.05,.8));
-close(compare(40,1000,40,1000).p,1);
-const r=compare(2000,50000,2400,50000);
-close(r.diff,.008);close(r.relative,.2);assert.ok(r.low>0);assert.ok(r.p<.0001);
-const swapped=compare(2400,50000,2000,50000);
-close(swapped.diff,-r.diff);close(swapped.low,-r.high);close(swapped.p,r.p);
-close(srm(50000,50000),1);assert.ok(srm(6000,4000)<.001);
-assert.equal(compare(2,1000,2,1000).validApprox,false);
-assert.deepEqual(scenarios.map(s=>assess(s).outcome),['uncertain','small','harm','win']);
-assert.ok(assess(scenarios[1]).main.high<.004);
-assert.equal(assess(scenarios[0]).safe,false);
-assert.throws(()=>plan(.99,.02));assert.throws(()=>compare(20,10,1,10));
-console.log('AdScope: reference values, symmetry, power sensitivity, SRM, sparse counts and four decisions pass.');
+const {normalCDF,quantile,plan}=await import(bundled?'../dist/adscope-stats.mjs':'./adscope-stats.mjs');
+assert.ok(Math.abs(normalCDF(1.959963984540054)-.975)<1e-6);
+assert.ok(Math.abs(quantile(.975)-1.959963984540054)<3e-6);
+// Independently checked using Python statistics.NormalDist.
+assert.equal(plan(.04,.004),39475);
+assert.equal(plan(.04,.002),154304);
+assert.ok(plan(.02,.004)!==plan(.04,.004));
+assert.throws(()=>plan(.99,.02));assert.throws(()=>plan(0,.004));
+console.log('AdScope planning: reference values, sensitivity and invalid-input checks pass.');
